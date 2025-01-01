@@ -26,7 +26,7 @@ Getting Started
 
 ### Installation
 1. Clone the repository:
-git clone https://github.com/<your-username>/syncro.git cd syncro
+git clone https://github.com/IntegerAlex/syncro.git cd syncro
 
 2. Build the project:
 
