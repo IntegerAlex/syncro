@@ -5,6 +5,8 @@ Syncro is a **version control system (VCS)** inspired by Git. It is a minimal im
 
 This project is open to collaboration and contributions from developers interested in version control systems or learning low-level implementations of such tools.
 
+**Note: This project is in its early development stages and is currently under active development.**
+
 Features
 --------
 - Initialize repositories with a structured directory layout.
