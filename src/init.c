@@ -40,8 +40,16 @@ int init(const char *base_path) {
         perror("fopen");
         return 1;
     }
-    fprintf(fp, "ref: refs/heads/master\n");
-    fclose(fp);
+    int fpvalue = fprintf(fp, "ref: refs/heads/master\n");
+    if (fpvalue < 0) {
+	perror("fprintf");
+	return 1;
+    }
+    int fvalue = fclose(fp);
+    if (fvalue == EOF) {
+	perror("fclose");
+	return 1;
+    }
 
     return 0;
 }

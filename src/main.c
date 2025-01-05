@@ -16,8 +16,11 @@ int main(int argc, char *argv[]) {
 
     if (strcmp(argv[1], "init") == 0) {
         char syncro_path[256];
-        snprintf(syncro_path, sizeof(syncro_path), "%s/.syncro", base_path);
-
+        int value = snprintf(syncro_path, sizeof(syncro_path), "%s/.syncro", base_path);
+	if (value < 0) {
+	    perror("snprintf");
+	    return 1;
+	}
         if (check_dir(syncro_path)) {
             printf("Syncro already initialized\n");
         } else {
