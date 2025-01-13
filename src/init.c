@@ -1,5 +1,6 @@
 #include<sys/stat.h>
 #include <sys/types.h>
+#include <stdio.h>
 #include "init.h"
 int init(const char *base_path) {
     char path[256];
@@ -50,6 +51,6 @@ int init(const char *base_path) {
 	perror("fclose");
 	return 1;
     }
-
+	puts("Initialized empty Syncro repository");
     return 0;
 }

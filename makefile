@@ -1,22 +1,40 @@
-# Variables
+# Compiler and flags
 CC = gcc
-CFLAGS = -Iinclude -Wall
-SRC = src/dir.c src/init.c src/main.c
-OBJ = build/dir.o build/init.o build/main.o
-TARGET = build/vcs
+CFLAGS = -Wall -Iinclude
+LDFLAGS = 
+
+# Directories
+SRC_DIR = src
+BUILD_DIR = build
+INCLUDE_DIR = include
+LIB_DIR = lib
+
+# Source files and object files
+SRCS = $(SRC_DIR)/add.c $(SRC_DIR)/dir.c $(SRC_DIR)/init.c $(SRC_DIR)/main.c
+OBJS = $(BUILD_DIR)/add.o $(BUILD_DIR)/dir.o $(BUILD_DIR)/init.o $(BUILD_DIR)/main.o
+
+# Output binary
+TARGET = ./build/syncro 
 
 # Default target
 all: $(TARGET)
 
-# Linking object files into the final executable
-$(TARGET): $(OBJ)
-	$(CC) $(OBJ) -o $(TARGET)
+# Rule to link object files into the final binary
+$(TARGET): $(OBJS)
+	$(CC) $(OBJS) -o $(TARGET) $(LDFLAGS)
 
-# Compiling source files into object files
-build/%.o: src/%.c
+# Rule to compile source files into object files
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Clean build files
+# Clean rule to remove compiled files
 clean:
-	rm -f build/*.o $(TARGET)
+	rm -f $(BUILD_DIR)/*.o $(TARGET)
+
+# Optional: Install target (if needed)
+install:
+	cp $(TARGET) /usr/local/bin/$(TARGET)
+
+# Phony targets
+.PHONY: all clean install
 

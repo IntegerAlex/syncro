@@ -1,4 +1,5 @@
 #include "dir.h"
+
 //
 
 // This function checks if a file is a directory.

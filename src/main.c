@@ -5,34 +5,53 @@
 #include <errno.h>
 #include "dir.h"
 #include "init.h"
+#include "add.h"
+int init(const char *base_path);
+int command(char *command);
+char* add(char *paths[], int count);
+
+
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         printf("Usage: %s init [base_path]\n", argv[0]);
         return 1;
     }
+	int value = command(argv[1]);
+    	const char *base_path = argc > 2 ? argv[2] : ".";
+	switch(value){
+		case 1:
+			init(base_path);
+			break;
 
-    const char *base_path = argc > 2 ? argv[2] : ".";
+		case 2:
+			for(int i= 2; i < argc; i++){
+				argv[i-2] = argv[i];
+			
+			}
+			char* message = add(argv, argc-2);
+			printf("%s\n", message);
+			break;
 
-    if (strcmp(argv[1], "init") == 0) {
-        char syncro_path[256];
-        int value = snprintf(syncro_path, sizeof(syncro_path), "%s/.syncro", base_path);
-	if (value < 0) {
-	    perror("snprintf");
-	    return 1;
+		case 3:
+			break;
 	}
-        if (check_dir(syncro_path)) {
-            printf("Syncro already initialized\n");
-        } else {
-            if (init(base_path) == 0) {
-                printf("Syncro initialized at %s/.syncro\n", base_path);
-            }
-        }
-    } else {
-        printf("Unknown command: %s\n", argv[1]);
-        printf("Usage: %s init [base_path]\n", argv[0]);
-    }
 
     return 0;
+}
+
+int command(char *command){
+	if(strcmp(command, "init") == 0){
+		return 1;
+	}
+	else if(strcmp(command, "add") == 0){
+		return 2;
+	}
+	else if (strcmp(command, "commit") == 0){
+		return 3;
+	}
+	else{
+		return 0;
+	}
 }
 
