@@ -26,7 +26,7 @@ Getting Started
 
 ### Installation
 1. Clone the repository:
-git clone https://github.com/<your-username>/syncro.git cd syncro
+git clone https://github.com/IntegerAlex/syncro.git cd syncro
 
 2. Build the project:
 
@@ -63,7 +63,7 @@ We welcome contributions! Here’s how you can help:
 
 License
 -------
-This project is licensed under the **Global Open Source Software Free License (GOFL) V-1**.  
+This project is licensed under the **Global Open Source Software Free License (GOFL-V1)**.  
 For details, see the [LICENSE](LICENSE.md) file.
 
 Contact
