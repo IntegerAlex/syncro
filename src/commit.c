@@ -14,26 +14,41 @@
 
 static char* concat_path_with_cwd(const char*);
 static int snapem(char*);
-static int snapshot();
+static int snapshot(void);
+char* commit_hash(void);
 
 int commit(char *message) {
-	if(!snapshot()) {
+	int error = snapshot();
+	if (error == -1) {
 		return -1;
 	}
-
+	const char* hash = commit_hash();
+	printf("Commit hash: %s\n", hash);
+	
     printf("Committing changes with message: %s\n", message);
     return 0;
 }
 
 
-static int snapshot() {
+static int snapshot(void) {
 	
 	// Read the file line by line
-	FILE *file = fopen("../.syncro/refs/trackables.txt", "r");
+	
+	FILE *file = fopen(concat_path_with_cwd(".syncro/refs/trackable.txt"), "r");
+	printf("%s\n", concat_path_with_cwd(".syncro/refs/trackable.txt"));
+	if (!file) {
+		perror("Error opening trackables file");
+		return -1;
+	}
 	char line[256];
 	while (fgets(line, sizeof(line), file)) {
 		snapem(line);
+		if (line[strlen(line) - 1] == '\n') {
+			line[strlen(line) - 1] = '\0';  // Remove newline character
+		}
+		printf("Snapshotting: %s\n", line);
 	}
+	
 	fclose(file);
     return 1;
 }
@@ -42,6 +57,7 @@ static int snapshot() {
 static int snapem(char* path) {
     // Open the source file
     FILE *source = fopen(concat_path_with_cwd(path), "r");
+    printf("%s\n", concat_path_with_cwd(path));
     if (!source) {
         perror("Error opening source file");
         return -1;  // If fopen fails, return an error
@@ -159,80 +175,12 @@ static char* concat_path_with_cwd(const char* relative_path) {
     return absolute_path;
 }
 
-char* commit_hash() {
+char* commit_hash(void) {
 
 
-
+	return "this is a hash";
 
 }
 
 
-
-// Function to compute the SHA-256 hash of a file's contents
-void update_sha256_with_file(FILE* file, SHA256_CTX* sha256_ctx) {
-    unsigned char buffer[1024];  // Buffer for reading the file
-    size_t bytes_read;
-
-    // Read the file in chunks and update the SHA-256 context
-    while ((bytes_read = fread(buffer, 1, sizeof(buffer), file)) != 0) {
-        SHA256_Update(sha256_ctx, buffer, bytes_read);
-    }
-}
-
-// Function to compute a single SHA-256 hash for all files in a directory
-int compute_single_sha256_for_directory(const char* dir_path) {
-    // Initialize SHA-256 context
-    SHA256_CTX sha256_ctx;
-    SHA256_Init(&sha256_ctx);
-
-    // Open the directory
-    DIR* dir = opendir(dir_path);
-    if (dir == NULL) {
-        perror("Error opening directory");
-        return -1;
-    }
-
-    struct dirent* entry;
-    char full_path[MAX_PATH_LENGTH];
-
-    // Iterate over all the entries in the directory
-    while ((entry = readdir(dir)) != NULL) {
-        // Skip "." and ".." (current and parent directory entries)
-        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
-            continue;
-        }
-
-        // Build the full path of the file
-        snprintf(full_path, sizeof(full_path), "%s/%s", dir_path, entry->d_name);
-
-        // Open the file for reading
-        FILE* file = fopen(full_path, "r");
-        if (file == NULL) {
-            perror("Error opening file");
-            continue;  // Skip this file and continue with the next
-        }
-
-        // Update SHA-256 hash for the current file's contents
-        update_sha256_with_file(file, &sha256_ctx);
-
-        // Close the file after reading
-        fclose(file);
-    }
-
-    // Close the directory
-    closedir(dir);
-
-    // Allocate memory for the final hash result
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256_Final(hash, &sha256_ctx);
-
-    // Print the SHA-256 hash in hexadecimal format
-    printf("SHA-256 hash of directory contents: ");
-    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
-        printf("%02x", hash[i]);
-    }
-    printf("\n");
-
-    return 0;
-}
 

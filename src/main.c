@@ -9,7 +9,7 @@
 int init(const char *base_path);
 int command(char *command);
 char* add(char *paths[], int count);
-
+int commit(const char *message);
 
 
 int main(int argc, char *argv[]) {
@@ -34,6 +34,7 @@ int main(int argc, char *argv[]) {
 			break;
 
 		case 3:
+			commit(argv[2]);
 			break;
 	}
 
