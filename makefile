@@ -1,7 +1,7 @@
 # Compiler and flags
 CC = gcc
-CFLAGS = -Wall -Iinclude -I/usr/include/openssl -g
-LDFLAGS = -Llib -lssl -lcrypto -lz 
+CFLAGS = -Wall -Iinclude -I/usr/include/openssl -g -std=c99 -D_POSIX_C_SOURCE=200809L
+LDFLAGS = -Llib -lssl -lcrypto -lz
 
 # Directories
 SRC_DIR = src
@@ -14,7 +14,7 @@ SRCS = $(SRC_DIR)/add.c $(SRC_DIR)/dir.c $(SRC_DIR)/init.c $(SRC_DIR)/commit.c $
 OBJS = $(BUILD_DIR)/add.o $(BUILD_DIR)/dir.o $(BUILD_DIR)/init.o $(BUILD_DIR)/commit.o $(BUILD_DIR)/main.o
 
 # Output binary
-TARGET = ./build/syncro 
+TARGET = ./build/syncro
 
 # Default target
 all: $(TARGET)
@@ -27,14 +27,7 @@ $(TARGET): $(OBJS)
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Clean rule to remove compiled files
+# Clean rule
 clean:
-	rm -f $(BUILD_DIR)/*.o $(TARGET)
-
-# Optional: Install target (if needed)
-install:
-	cp $(TARGET) /usr/local/bin/$(TARGET)
-
-# Phony targets
-.PHONY: all clean install
+	rm -f $(OBJS) $(TARGET)
 
