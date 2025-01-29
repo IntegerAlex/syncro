@@ -1,6 +1,6 @@
 # Compiler and flags
 CC = gcc
-CFLAGS = -Wall -Iinclude -I/usr/include/openssl -g -std=c99 -D_POSIX_C_SOURCE=200809L
+CFLAGS = -Wall -Iinclude -I/usr/include/openssl -g -std=c99 -D_POSIX_C_SOURCE=200112L
 LDFLAGS = -Llib -lssl -lcrypto -lz
 
 # Directories

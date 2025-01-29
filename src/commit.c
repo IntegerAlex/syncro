@@ -1,186 +1,113 @@
-#include <stdio.h>	
-#include <zlib.h>
-#include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <dirent.h>
-#include <openssl/sha.h>
-#include "commit.h"
-
-#define CHUNK 1024 // Size of each chunk to read and compress
+#include <string.h>
+#include <zlib.h>
 
 #define MAX_PATH_LENGTH 1024
+#define CHUNK 1024
 
-
-static char* concat_path_with_cwd(const char*);
-static int snapem(char*);
-static int snapshot(void);
-char* commit_hash(void);
-
-int commit(char *message) {
-	int error = snapshot();
-	if (error == -1) {
-		return -1;
-	}
-	const char* hash = commit_hash();
-	printf("Commit hash: %s\n", hash);
-	
-    printf("Committing changes with message: %s\n", message);
-    return 0;
-}
-
-
-static int snapshot(void) {
-	
-	// Read the file line by line
-	
-	FILE *file = fopen(concat_path_with_cwd(".syncro/refs/trackable.txt"), "r");
-	printf("%s\n", concat_path_with_cwd(".syncro/refs/trackable.txt"));
-	if (!file) {
-		perror("Error opening trackables file");
-		return -1;
-	}
-	char line[256];
-	while (fgets(line, sizeof(line), file)) {
-		snapem(line);
-		if (line[strlen(line) - 1] == '\n') {
-			line[strlen(line) - 1] = '\0';  // Remove newline character
-		}
-		printf("Snapshotting: %s\n", line);
-	}
-	
-	fclose(file);
-    return 1;
-}
-
-
-static int snapem(char* path) {
-    // Open the source file
-    FILE *source = fopen(concat_path_with_cwd(path), "r");
-    printf("%s\n", concat_path_with_cwd(path));
-    if (!source) {
-        perror("Error opening source file");
-        return -1;  // If fopen fails, return an error
+// Function to concatenate path with the current working directory
+char* concat_path_with_cwd(const char* path) {
+    char* cwd = getcwd(NULL, 0);  // Get current working directory
+    if (!cwd) {
+        return NULL;
     }
- // Create the destination path by concatenating CWD + .syncro/objects/ + path
-    char* dest_path = concat_path_with_cwd(".syncro/objects/stage");
+
+    size_t cwd_len = strlen(cwd);
+    size_t path_len = strlen(path);
+    
+    // Allocate memory for the concatenated path
+    char* full_path = malloc(cwd_len + path_len + 2);
+    if (!full_path) {
+        free(cwd);
+        return NULL;
+    }
+
+    // Construct the full path
+    snprintf(full_path, cwd_len + path_len + 2, "%s/%s", cwd, path);
+    free(cwd);
+    return full_path;
+}
+
+static int snapem(const char* path) {
+    // Resolve the full path of the source file
+    char* source_path = concat_path_with_cwd(path);
+    if (!source_path) {
+        fprintf(stderr, "Error: Failed to resolve source path for %s\n", path);
+        return -1;
+    }
+
+    // Open the source file in read mode (binary)
+    FILE *source = fopen(source_path, "rb");
+    if (!source) {
+        fprintf(stderr, "Error: Failed to open source file %s\n", source_path);
+        free(source_path);
+        return -1;
+    }
+    free(source_path);  // Free the source path memory after file is opened
+
+    // Define the destination directory and resolve the path
+    char* dest_path = "/home/akshatrhel/projects/syncro/.syncro/objects/"; // Destination directory 
     if (!dest_path) {
-        perror("Error concatenating CWD for destination path");
+        fclose(source);
+        return -1;
+    }
+    
+    // Create the final destination path by combining the destination directory and original file path
+    char final_dest_path[MAX_PATH_LENGTH];
+    snprintf(final_dest_path, sizeof(final_dest_path), "%s/%s", dest_path, path);
+
+    // Open the destination file in write mode (binary)
+    FILE *dest = fopen(final_dest_path, "wb");
+    if (!dest) {
+        fprintf(stderr, "Error: Failed to open destination file %s\n", final_dest_path);
         fclose(source);
         return -1;
     }
 
-    // Append the relative path to the destination path
-    char final_dest_path[1024];
-    snprintf(final_dest_path, sizeof(final_dest_path), "%s%s", dest_path, path);
-
-    // Open the destination file to write the compressed data
-    FILE *dest = fopen(final_dest_path, "a");
-    if (!dest) {
-        perror("Error opening destination file");
-        fclose(source);  // Don't forget to close the source file if fopen fails
-        return -1;
-    }
-
-    // Initialize zlib deflate stream
-    z_stream defstream;
-    defstream.zalloc = Z_NULL;
-    defstream.zfree = Z_NULL;
-    defstream.opaque = Z_NULL;
-
+    // Initialize the zlib stream for compression
+    z_stream defstream = {0};
     if (deflateInit(&defstream, Z_DEFAULT_COMPRESSION) != Z_OK) {
-        perror("Error initializing deflate stream");
+        fprintf(stderr, "Error: Failed to initialize zlib compression\n");
         fclose(source);
         fclose(dest);
         return -1;
     }
 
-    unsigned char out[CHUNK];
-    unsigned char in[CHUNK];
-    int flush;
-    int bytes_read, bytes_written;
+    // Buffers for reading and writing compressed data
+    unsigned char in[CHUNK], out[CHUNK];
+    int flush, bytes_read;
 
-    // Read and compress in chunks
+    // Compression loop
     do {
         bytes_read = fread(in, 1, CHUNK, source);
-        if (bytes_read == 0) {
-            flush = Z_FINISH;  // No more data to read, so flush
-        } else {
-            flush = Z_NO_FLUSH;
-        }
-
-        if (bytes_read < 0) {
-            perror("Error reading from source file");
-            deflateEnd(&defstream);
-            fclose(source);
-            fclose(dest);
-            return -1;  // Handle fread failure
-        }
-
+        flush = feof(source) ? Z_FINISH : Z_NO_FLUSH;  // Set flush flag at EOF
+        
         defstream.avail_in = bytes_read;
         defstream.next_in = in;
-
+        
+        // Compress the data and write to the destination
         do {
             defstream.avail_out = CHUNK;
             defstream.next_out = out;
-
-            int ret = deflate(&defstream, flush);
-            if (ret == Z_STREAM_ERROR) {
-                perror("Error during compression");
+            if (deflate(&defstream, flush) == Z_STREAM_ERROR) {
+                fprintf(stderr, "Error: Compression failed\n");
                 deflateEnd(&defstream);
                 fclose(source);
                 fclose(dest);
                 return -1;
             }
-
-            bytes_written = CHUNK - defstream.avail_out;
-            if (fwrite(out, 1, bytes_written, dest) != bytes_written || ferror(dest)) {
-                perror("Error writing to destination file");
-                deflateEnd(&defstream);
-                fclose(source);
-                fclose(dest);
-                return -1;
-            }
+            fwrite(out, 1, CHUNK - defstream.avail_out, dest);
         } while (defstream.avail_out == 0);
+    } while (flush != Z_FINISH);  // Continue until compression is finished
 
-    } while (flush != Z_FINISH);
-
-    // Clean up
+    // Clean up and close files
     deflateEnd(&defstream);
     fclose(source);
     fclose(dest);
-		
-    return 0;
+    
+    return 0;  // Success
 }
-static char* concat_path_with_cwd(const char* relative_path) {
-    // Get the current working directory
-    char cwd[1024];
-    if (getcwd(cwd, sizeof(cwd)) == NULL) {
-        perror("getcwd() error");
-        return NULL;  // Error getting current working directory
-    }
-
-    // Allocate enough memory for the combined path
-    size_t path_len = strlen(cwd) + strlen(relative_path) + 2; // +2 for '/' and null-terminator
-    char* absolute_path = (char*)malloc(path_len);
-    if (!absolute_path) {
-        perror("Memory allocation error");
-        return NULL;  // Memory allocation failed
-    }
-
-    // Concatenate the current directory with the relative path
-    snprintf(absolute_path, path_len, "%s/%s", cwd, relative_path);
-
-    // Return the resulting absolute path
-    return absolute_path;
+int main(void){
+snapem("LICENSE.md");  // Call the snapem function with the source file path
 }
-
-char* commit_hash(void) {
-
-
-	return "this is a hash";
-
-}
-
-
-
