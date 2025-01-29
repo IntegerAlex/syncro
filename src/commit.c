@@ -3,7 +3,7 @@
 #include <string.h>
 #include <zlib.h>
 #include <unistd.h>
-
+#include <sys/stat.h>
 #define MAX_PATH_LENGTH 1024
 #define CHUNK 1024
 
@@ -38,9 +38,16 @@ static int snapem(char* path) {
         return -1;
     }
 
+    // make the stage directory
+    if (mkdir(".syncro/objects/stage", 0777) != 0) {
+	fprintf(stderr, "Error: Failed to create .syncro/objects/stage directory\n");
+	fclose(source);
+	return -1;
+    }
+
     // Construct the destination file path
     char final_dest_path[MAX_PATH_LENGTH];
-    snprintf(final_dest_path, sizeof(final_dest_path), ".syncro/objects/%s", path);
+    snprintf(final_dest_path, sizeof(final_dest_path), ".syncro/objects/stage/%s", path);
 
     // Open the destination file
     FILE *dest = fopen(final_dest_path, "wb");
