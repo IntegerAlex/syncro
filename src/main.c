@@ -4,12 +4,13 @@
 #include <string.h>
 #include <errno.h>
 #include "dir.h"
+#include "commit.h"
 #include "init.h"
 #include "add.h"
 int init(const char *base_path);
 int command(char *command);
 char* add(char *paths[], int count);
-int commit(const char *message);
+int commit( char *message);
 
 
 int main(int argc, char *argv[]) {

@@ -5,7 +5,7 @@
 
 int commit(char *message);   // Commit function declaration
 static int snapshot(void);          // Snapshot function declaration
-static int snapem(const char* path);      // Snapem function declaration
+int snapem(char* path);      // Snapem function declaration
 
 #endif
 
