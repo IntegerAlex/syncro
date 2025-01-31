@@ -9,7 +9,7 @@
 
 // Function to concatenate path with the current working directory
 // Returns a pointer to the full path, or NULL on error 
-// The caller is responsible for freeing the returned pointer\
+// The caller is responsible for freeing the returned pointer
 // This function is not thread-safe
 // The returned pointer is only valid until the next call to this function 
 // parameters:
@@ -58,11 +58,6 @@ static int snapem(char* path) {
     }
 
     // make the stage directory
-    if (mkdir(".syncro/objects/stage", 0777) != 0) {
-	fprintf(stderr, "Error: Failed to create .syncro/objects/stage directory\n");
-	fclose(source);
-	return -1;
-    }
 
     // Construct the destination file path
     char final_dest_path[MAX_PATH_LENGTH];
@@ -135,7 +130,11 @@ int commit(char* message) {
         fprintf(stderr, "Error: Failed to open tracker file .syncro/refs/trackable.txt\n");
         return -1;
     }
-
+	
+    if (mkdir(".syncro/objects/stage", 0777) != 0) {
+	fprintf(stderr, "Error: Failed to create .syncro/objects/stage directory\n");
+	return -1;
+    }
     char path[MAX_PATH_LENGTH];
     while (fgets(path, sizeof(path), tracker)) {
         // Trim newline
