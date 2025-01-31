@@ -8,6 +8,16 @@
 #define CHUNK 1024
 
 // Function to concatenate path with the current working directory
+// Returns a pointer to the full path, or NULL on error 
+// The caller is responsible for freeing the returned pointer\
+// This function is not thread-safe
+// The returned pointer is only valid until the next call to this function 
+// parameters:
+// 	path: the path to concatenate with the current working directory
+// 	      if path is NULL, the current working directory is returned
+// 	      if path is an absolute path, it is returned as is
+// returns:
+// 	a pointer to the full path, or NULL on error
 char* concat_path_with_cwd(const char* path) {
     char* cwd = getcwd(NULL, 0);  // Get current working directory
     if (!cwd) {
@@ -26,6 +36,15 @@ char* concat_path_with_cwd(const char* path) {
     return full_path;
 }
 
+// Function to create a BLOB object from a file
+// parameters:
+// 	path: the path to the file to create the BLOB object from
+// 	returns:
+// 		0 on success, -1 on error
+// 			-1 is returned if the file cannot be opened, or if the BLOB object cannot be created
+// 				-1 is also returned if the file is empty
+// 					-1 is also returned if the BLOB object cannot be written to the .syncro/objects directory
+//
 static int snapem(char* path) {
     // Resolve full source path
     char source_path[MAX_PATH_LENGTH];
@@ -99,6 +118,17 @@ static int snapem(char* path) {
     return 0;
 }
 
+// Function to commit the staged files
+// parameters:
+// 	message: the commit message
+// returns:
+// 	0 on success, -1 on error
+// 		-1 is returned if the tracker file cannot be opened
+// 			-1 is also returned if any of the staged files cannot be snapem'd
+// 				-1 is also returned if the commit message cannot be written to the .syncro/objects directory
+// 					-1 is also returned if the commit message cannot be written to the .syncro/refs/commits directory
+// 						-1 is also returned if the commit message cannot be written to the .syncro/refs/trackable.txt file
+// 							-1 is also returned if the commit message cannot be written to the .syncro/refs/HEAD file
 int commit(char* message) {
     FILE *tracker = fopen(".syncro/refs/trackable.txt", "r");
     if (!tracker) {
