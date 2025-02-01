@@ -6,7 +6,54 @@
 #include <sys/stat.h>
 #define MAX_PATH_LENGTH 1024
 #define CHUNK 1024
+#include <errno.h>
 
+
+// Function to create a directory and all its parent directories
+// parameters:
+// 	dir: the directory to creat
+// returns:
+// 	0 on success, -1 on error
+// 		-1 is returned if the directory cannot be created
+// 			-1 is also returned if the directory already exists
+// 				-1 is also returned if the directory cannot be created due to a permission error
+// 					-1 is also returned if the directory cannot be created due to a file system error
+//
+int mkdir_p(const char *dir) {
+    char tmp[PATH_MAX];
+    char *p = NULL;
+    size_t len;
+
+    // Copy directory string
+    snprintf(tmp, sizeof(tmp), "%s", dir);
+    len = strlen(tmp);
+    if (tmp[len - 1] == '/') {
+        tmp[len - 1] = '\0';
+    }
+
+    // Iterate through the path
+    for (p = tmp + 1; *p; p++) {
+        if (*p == '/') {
+            *p = '\0';
+            if (mkdir(tmp, 0777) != 0) {
+                if (errno != EEXIST) {
+                    fprintf(stderr, "Error: Failed to create directory %s: %s\n", tmp, strerror(errno));
+                    return -1;
+                }
+            }
+            *p = '/';
+        }
+    }
+
+    if (mkdir(tmp, 0777) != 0) {
+        if (errno != EEXIST) {
+            fprintf(stderr, "Error: Failed to create directory %s: %s\n", tmp, strerror(errno));
+            return -1;
+        }
+    }
+
+    return 0;
+}
 // Function to concatenate path with the current working directory
 // Returns a pointer to the full path, or NULL on error 
 // The caller is responsible for freeing the returned pointer
@@ -46,27 +93,44 @@ char* concat_path_with_cwd(const char* path) {
 // 					-1 is also returned if the BLOB object cannot be written to the .syncro/objects directory
 //
 static int snapem(char* path) {
+    // Validate path
+    if (strstr(path, "..") != NULL) {
+        fprintf(stderr, "Error: Path contains '..' which is not allowed: %s\n", path);
+        return -1;
+    }
+
     // Resolve full source path
-    char source_path[MAX_PATH_LENGTH];
+    char source_path[PATH_MAX];
     snprintf(source_path, sizeof(source_path), "./%s", path);
 
     // Open the source file
     FILE *source = fopen(source_path, "rb");
     if (!source) {
-        fprintf(stderr, "Error: Failed to open source file %s\n", source_path);
+        fprintf(stderr, "Error: Failed to open source file %s: %s\n", source_path, strerror(errno));
         return -1;
     }
 
-    // make the stage directory
-
     // Construct the destination file path
-    char final_dest_path[MAX_PATH_LENGTH];
+    char final_dest_path[PATH_MAX];
     snprintf(final_dest_path, sizeof(final_dest_path), ".syncro/objects/stage/%s", path);
+
+    // Ensure the parent directory exists:
+    char dest_dir[PATH_MAX];
+    snprintf(dest_dir, sizeof(dest_dir), "%s", final_dest_path);
+    char *last_slash = strrchr(dest_dir, '/');
+    if (last_slash != NULL) {
+        *last_slash = '\0'; // Terminate string at the last slash to get the directory path
+        if (mkdir_p(dest_dir) != 0) {
+            fprintf(stderr, "Error: Failed to create directory %s\n", dest_dir);
+            fclose(source);
+            return -1;
+        }
+    }
 
     // Open the destination file
     FILE *dest = fopen(final_dest_path, "wb");
     if (!dest) {
-        fprintf(stderr, "Error: Failed to open destination file %s\n", final_dest_path);
+        fprintf(stderr, "Error: Failed to open destination file %s: %s\n", final_dest_path, strerror(errno));
         fclose(source);
         return -1;
     }
@@ -87,10 +151,10 @@ static int snapem(char* path) {
     do {
         bytes_read = fread(in, 1, CHUNK, source);
         flush = feof(source) ? Z_FINISH : Z_NO_FLUSH;
-        
+
         defstream.avail_in = bytes_read;
         defstream.next_in = in;
-        
+
         do {
             defstream.avail_out = CHUNK;
             defstream.next_out = out;
@@ -101,7 +165,14 @@ static int snapem(char* path) {
                 fclose(dest);
                 return -1;
             }
-            fwrite(out, 1, CHUNK - defstream.avail_out, dest);
+            size_t write_size = CHUNK - defstream.avail_out;
+            if (fwrite(out, 1, write_size, dest) != write_size) {
+                fprintf(stderr, "Error: Failed to write compressed data to %s: %s\n", final_dest_path, strerror(errno));
+                deflateEnd(&defstream);
+                fclose(source);
+                fclose(dest);
+                return -1;
+            }
         } while (defstream.avail_out == 0);
     } while (flush != Z_FINISH);
 
@@ -112,7 +183,6 @@ static int snapem(char* path) {
 
     return 0;
 }
-
 // Function to commit the staged files
 // parameters:
 // 	message: the commit message
