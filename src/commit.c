@@ -4,11 +4,12 @@
 #include <zlib.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include "hash.h"
+#include <errno.h>
 #define MAX_PATH_LENGTH 1024
 #define CHUNK 1024
-#include <errno.h>
 
-
+int makeSHA(void); // Impoted function to hash the current time and rename the stage file from hash.c
 // Function to create a directory and all its parent directories
 // parameters:
 // 	dir: the directory to creat
@@ -221,7 +222,7 @@ int commit(char* message) {
     }
 
     fclose(tracker);
+    makeSHA();
     printf("Commit successful\n%s\n", message);
     return 0;
 }
-
