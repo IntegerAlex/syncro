@@ -63,6 +63,14 @@ int init(const char *base_path) {
 	perror("fclose");
 	return 1;
     }
-	puts("Initialized empty Syncro repository");
+
+    // Print license and Author information with the init message
+    printf("\nSyncro - Just works better\n");
+    printf("Version 0.1\n");
+    printf("Copyright 2024-2025 Akshat Kotpalliwar (alias IntegerAlex on github)\n");
+    printf("License: GOFL-V1\n");
+    printf("Warranty and Liability: None\n");
+    printf("\nInitialized empty Syncro repository in %s/.syncro/\n", base_path);
+    
     return 0;
 }

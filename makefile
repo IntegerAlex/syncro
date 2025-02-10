@@ -11,7 +11,7 @@ INCLUDE_DIR = include
 LIB_DIR = lib
 
 # Source files
-SRCS = add.c dir.c init.c hash.c commit.c main.c
+SRCS = add.c rm.c dir.c init.c hash.c commit.c main.c
 OBJS_LINUX = $(SRCS:%.c=$(BUILD_DIR_LINUX)/%.o)
 
 # Output binaries

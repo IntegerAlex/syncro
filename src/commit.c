@@ -10,6 +10,7 @@
 #define CHUNK 1024
 
 int makeSHA(void); // Impoted function to hash the current time and rename the stage file from hash.c
+
 // Function to create a directory and all its parent directories
 // parameters:
 // 	dir: the directory to creat
@@ -55,6 +56,8 @@ int mkdir_p(const char *dir) {
 
     return 0;
 }
+
+
 // Function to concatenate path with the current working directory
 // Returns a pointer to the full path, or NULL on error 
 // The caller is responsible for freeing the returned pointer

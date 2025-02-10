@@ -7,9 +7,11 @@
 #include "commit.h"
 #include "init.h"
 #include "add.h"
+#include "rm.h"
 int init(const char *base_path);
 int command(char *command);
 char* add(char *paths[], int count);
+char* remove_files(char *paths[], int count);
 int commit( char *message);
 
 
@@ -37,6 +39,14 @@ int main(int argc, char *argv[]) {
 		case 3:
 			commit(argv[2]);
 			break;
+		case 4:
+			for(int i= 2; i < argc; i++){
+				argv[i-2] = argv[i];
+			
+			}
+			char* message1 = remove_files(argv, argc-2);
+			printf("%s\n", message1);
+			break;
 	}
 
     return 0;
@@ -51,6 +61,9 @@ int command(char *command){
 	}
 	else if (strcmp(command, "commit") == 0){
 		return 3;
+	}
+	else if (strcmp(command,"rm") == 0){
+		return 4;
 	}
 	else{
 		return 0;
