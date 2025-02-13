@@ -1,6 +1,5 @@
 #include "dir.h"
-
-//
+#include <sys/stat.h>
 
 // This function checks if a file is a directory.
 // Parameters:
