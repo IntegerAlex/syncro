@@ -20,8 +20,9 @@ static char *hash(void) {
     time_t now = time(NULL);
     char time_str[TIME_STR_SIZE];
     snprintf(time_str, sizeof(time_str), "%ld", now);
+    // Here snprintf is used to convert the time_t value to a string
 
-    unsigned char hash[EVP_MAX_MD_SIZE];
+    unsigned char hash[EVP_MAX_MD_SIZE]; // EVP_MAX_MD_SIZE is the maximum size of the hash
     unsigned int hash_len = 0;
     EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
     if (!mdctx) {

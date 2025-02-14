@@ -17,7 +17,10 @@ int commit( char *message);
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
-        printf("Usage: %s init [base_path]\n", argv[0]);
+	    printf("syncro - a simple version control system\n");
+	    printf("version 0.1\n");
+	    printf("copywrite 2024-2025 Akshat Kotpalliwar (alias IntegerAlex on github\n");
+	    printf("Usage: %s <command> [<args>]\n", argv[0]);
         return 1;
     }
 	int value = command(argv[1]);
