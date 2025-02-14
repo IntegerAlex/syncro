@@ -3,7 +3,7 @@ name: Release Drafter
 on:
   push:
     branches:
-      - master  # Adjust this to your default branch
+      - release  # Adjust this to your default branch
   pull_request:
     types: [closed]
   workflow_dispatch:
