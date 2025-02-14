@@ -2,11 +2,11 @@
 #include "stdlib.h"
 #include "string.h"
 #include "inflate.h"
-
+#include "unistd.h"
 int zlib_inflate(FILE* source, FILE* dest);
 #define FILE_BUFF ".syncro/refs/buff.out"
 
-int diff(char* path, char* commit_id) {
+int diff(char* path, char* commit_id ,int verbose) {
     char HEAD[256];  
 
     // Get the latest commit ID if not provided
@@ -48,7 +48,21 @@ int diff(char* path, char* commit_id) {
 
     // Inflate the file
     int result = zlib_inflate(source_file, dest_file);
+    if (result != 0) {
+	perror("Error inflating file");
+	fclose(source_file);
+	fclose(dest_file);
+	return -1;
+    }
+    if(verbose ==1){
+	char *argv[] = {"/usr/bin/vbindiff",path, FILE_BUFF, NULL};
+	execvp("vbindiff",argv);
+    }
+    else{
+	    char *argv[] = {"/usr/bin/diff",  "--color=always", path, FILE_BUFF, NULL};
+execvp("diff", argv);
 
+}
     // Close files
     fclose(source_file);
     fclose(dest_file);

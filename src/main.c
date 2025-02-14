@@ -13,7 +13,7 @@ int command(char *command);
 char* add(char *paths[], int count);
 char* remove_files(char *paths[], int count);
 int commit( char *message);
-int diff(char* path, char* commit_id);
+int diff(char* path, char* commit_id,int verbose);
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -51,7 +51,9 @@ int main(int argc, char *argv[]) {
 			printf("%s\n", message1);
 			break;
 		case 5:
-			diff(argv[2], NULL);
+			diff(argv[2], NULL , 0);
+		case 6:
+			diff(argv[2], NULL ,1);
 	}
 
     return 0;
@@ -72,6 +74,9 @@ int command(char *command){
 	}
 	else if (strcmp(command, "diff") == 0){
 		return 5;
+	}
+	else if (strcmp(command, "vdiff") == 0){
+		return 6;
 	}
 	else{
 		return 0;
