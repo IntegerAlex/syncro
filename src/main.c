@@ -17,7 +17,7 @@ int diff(char* path, char* commit_id,int verbose);
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
-	    printf("syncro - a simple version control system\n");
+	    printf("syncro - Just works better\n");
 	    printf("version 0.1\n");
 	    printf("copywrite 2024-2025 Akshat Kotpalliwar (alias IntegerAlex on github\n");
 	    printf("Usage: %s <command> [<args>]\n", argv[0]);
@@ -52,8 +52,14 @@ int main(int argc, char *argv[]) {
 			break;
 		case 5:
 			diff(argv[2], NULL , 0);
+			break;
 		case 6:
 			diff(argv[2], NULL ,1);
+			break;
+		default:
+			printf("Invalid command\n");
+			printf("Usage: <command> [<args>]\n");
+			break;
 	}
 
     return 0;
@@ -79,6 +85,8 @@ int command(char *command){
 		return 6;
 	}
 	else{
+		printf("Invalid command\n");
+		printf("Usage: <command> [<args>]\n");
 		return 0;
 	}
 }
