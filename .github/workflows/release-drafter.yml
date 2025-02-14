@@ -3,7 +3,7 @@ name: Release Drafter
 on:
   push:
     branches:
-      - master  # Adjust this to your default branch
+      - master  # Adjust to your main branch
   pull_request:
     types: [closed]
   workflow_dispatch:
@@ -12,16 +12,37 @@ permissions:
   contents: write
 
 jobs:
-  update_release_draft:
+  build-and-release:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Install Dependencies (if needed)
+        run: sudo apt-get update && sudo apt-get install -y build-essential openssl libssl-dev  # Adjust if needed
+
+      - name: Build Project
+        run: make  # Adjust if needed (e.g., `make all` or `make build`)
+
+      - name: Archive Binary
+        run: |
+          mkdir -p artifacts
+          cp my_binary artifacts/  # Replace `my_binary` with your compiled binary name
+          tar -czvf my_binary.tar.gz -C artifacts my_binary
+
       - name: Run Release Drafter
+        id: create_release
         uses: release-drafter/release-drafter@v6
         with:
           config-name: release-drafter.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Binary to Release
+        if: steps.create_release.outputs.id != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          files: my_binary.tar.gz
+          token: ${{ secrets.GITHUB_TOKEN }}
 
