@@ -3,7 +3,7 @@ name: Release Drafter
 on:
   push:
     branches:
-      - master  # Adjust to your main branch
+      - main  # Adjust to your main branch
   pull_request:
     types: [closed]
   workflow_dispatch:
@@ -20,16 +20,16 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Dependencies (if needed)
-        run: sudo apt-get update && sudo apt-get install -y build-essential openssl libssl-dev  # Adjust if needed
+        run: sudo apt-get update && sudo apt-get install -y build-essential
 
       - name: Build Project
-        run: make  # Adjust if needed (e.g., `make all` or `make build`)
+        run: make  # Adjust if necessary (e.g., `make all`)
 
       - name: Archive Binary
         run: |
           mkdir -p artifacts
-          cp my_binary artifacts/  # Replace `my_binary` with your compiled binary name
-          tar -czvf my_binary.tar.gz -C artifacts my_binary
+          cp build/linux/syncro.bin artifacts/
+          tar -czvf syncro.bin.tar.gz -C artifacts syncro.bin
 
       - name: Run Release Drafter
         id: create_release
@@ -43,6 +43,6 @@ jobs:
         if: steps.create_release.outputs.id != ''
         uses: softprops/action-gh-release@v2
         with:
-          files: my_binary.tar.gz
+          files: syncro.bin.tar.gz
           token: ${{ secrets.GITHUB_TOKEN }}
 
