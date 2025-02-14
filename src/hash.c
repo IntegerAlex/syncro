@@ -63,11 +63,11 @@ static char *hash(void) {
 // 	   int - 0 if successful, -1 if an error occurred
 // 	   		 and an error message is printed to stderr
 // 	   		 if an error occurred
-int makeSHA(void) {
+char* makeSHA(void) {
     // Get the hash value
     char* hashValue = hash();  
     if (!hashValue) {
-        return -1;  // Return error if hash() failed
+        return NULL;  // Return error if hash() failed
     }
 
     // Calculate the new size for the concatenated string
@@ -77,7 +77,7 @@ int makeSHA(void) {
     char *new_path = malloc(new_size);
     if (!new_path) {
         free(hashValue);  // Clean up the allocated hashValue
-        return -1;  // Memory allocation failed
+        return NULL;  // Memory allocation failed
     }
 
     // Concatenate the paths safely using snprintf
@@ -88,12 +88,11 @@ int makeSHA(void) {
         fprintf(stderr, "Error: Failed to rename %s to %s\n", STAGE, new_path);
         free(hashValue);  // Clean up the allocated hashValue
         free(new_path);   // Clean up the allocated new_path
-        return -1;  // Rename failed
+        return NULL;  // Rename failed
     }
 
     // Clean up the allocated memory
-    free(hashValue);
     free(new_path);
 
-    return 0;  // Success
+    return hashValue;  // Success
 }

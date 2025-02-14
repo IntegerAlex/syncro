@@ -9,7 +9,7 @@
 #define MAX_PATH_LENGTH 1024
 #define CHUNK 1024
 
-int makeSHA(void); // Impoted function to hash the current time and rename the stage file from hash.c
+char* makeSHA(void); // Impoted function to hash the current time and rename the stage file from hash.c
 
 // Function to create a directory and all its parent directories
 // parameters:
@@ -225,7 +225,15 @@ int commit(char* message) {
     }
 
     fclose(tracker);
-    makeSHA();
+    char* hashValue = makeSHA();
+    // append the commit hash to COMMITS file
+    FILE *commit_file = fopen(".syncro/COMMITS", "a");
+    if (!commit_file) {
+	fprintf(stderr, "Error: Failed to open .syncro/COMMITS\n");
+	return -1;
+    }
+    fprintf(commit_file, "%s\n",hashValue );
+    free(hashValue);
     printf("Commit successful\n%s\n", message);
     return 0;
 }

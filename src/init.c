@@ -64,6 +64,20 @@ int init(const char *base_path) {
 	return 1;
     }
 
+    snprintf(path, sizeof(path), "%s/.syncro/COMMITS", base_path);
+    FILE *fp1 = fopen(path, "w");
+    if (fp1 == NULL) {
+	perror("fopen");
+	return 1;
+    }
+
+    snprintf(path,sizeof(path),"%s/.syncro/refs/buff.out",base_path);
+    FILE *fp2 = fopen(path, "w");
+    if (fp2 == NULL) {
+	perror("fopen");
+	return 1;
+    }
+    fclose(fp2);
     // Print license and Author information with the init message
     printf("\nSyncro - Just works better\n");
     printf("Version 0.1\n");
