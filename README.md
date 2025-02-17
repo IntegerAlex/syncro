@@ -2,7 +2,7 @@
 ---
 
 # Syncro - Version Control System (VCS)
-
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/IntegerAlex/syncro/badge)](https://scorecard.dev/viewer/?uri=github.com/IntegerAlex/syncro)
 Syncro is a **version control system (VCS)** inspired by Git. It is a minimal implementation designed for learning purposes, offering insight into how version control systems work under the hood. Syncro provides basic functionality to manage and track changes in files and directories. This project is open to collaboration and contributions from developers interested in version control systems or learning low-level implementations of such tools.
 
 ## Features
