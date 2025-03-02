@@ -1,0 +1,40 @@
+COMPRESSION TECHNICAL DETAILS
+=============================
+
+Compression Process
+------------------
+1. The file content is read fully into memory
+2. The original file size is calculated and stored
+3. Memory is allocated for both source and destination buffers
+4. The compress2() function from zlib is used with Z_BEST_COMPRESSION level
+5. A 4-byte header containing the original file size is written first
+6. The compressed data follows the header
+7. All memory is properly freed after operation
+
+Decompression Process
+--------------------
+1. The 4-byte header is read to determine original file size
+2. The compressed data size is calculated from file size minus header size
+3. Memory is allocated for both compressed and decompressed data
+4. The compressed data is read into memory
+5. The uncompress() function from zlib is used to decompress the data
+6. The decompressed data is written to the destination file
+7. All memory is properly freed after operation
+
+Memory Management
+----------------
+The implementation uses dynamically allocated memory to handle files of any size:
+- Source file is read completely into memory
+- Destination buffer is sized using compressBound() for compression
+- Original file size from header determines decompression buffer size
+- All allocations are checked for success
+- All allocated memory is properly freed after use, even in error cases
+
+Error Handling
+-------------
+The implementation provides comprehensive error handling:
+- File opening errors
+- Memory allocation failures
+- Compression/decompression errors
+- File reading/writing errors
+- All errors are reported with descriptive messages 

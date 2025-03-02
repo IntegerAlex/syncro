@@ -1,0 +1,48 @@
+COMPRESSION/DECOMPRESSION TROUBLESHOOTING
+=========================================
+
+Common Issues and Solutions
+--------------------------
+
+1. "Failed to read original file size header"
+   - The compressed file may be corrupted or not in the expected format
+   - Ensure the file was compressed with the current version of the system
+   - Check file permissions and disk space
+
+2. "Decompression failed with code X"
+   - Common codes:
+     - Z_MEM_ERROR (-4): Not enough memory
+     - Z_DATA_ERROR (-3): Corrupted compressed data
+     - Z_BUF_ERROR (-5): Output buffer too small
+   - For Z_MEM_ERROR: Free up system memory
+   - For Z_DATA_ERROR: The source file may be corrupted
+   - For Z_BUF_ERROR: File size header may be incorrect
+
+3. "Failed to allocate memory"
+   - System is low on memory
+   - Try closing other applications
+   - For very large files, consider using a machine with more RAM
+
+4. "Failed to write decompressed data"
+   - Check disk space
+   - Verify write permissions on the destination directory
+   - Ensure the destination path exists
+
+5. Empty buff.out file
+   - Check if .syncro/refs directory exists and is writable
+   - Verify that vdiff command is configured correctly
+   - Make sure decompression completes successfully
+
+Checking Compressed Files
+------------------------
+To verify a compressed file's integrity:
+1. Use the 'syncro vdiff' command to view the file
+2. Check the first 4 bytes - they should represent a reasonable file size
+3. Use test_compression.sh to run a full verification
+
+Memory Issues
+------------
+If Valgrind reports memory leaks:
+1. Check for paths where free() might be skipped due to early returns
+2. Ensure all allocated buffers are freed in error conditions
+3. Verify that file handles are closed properly 

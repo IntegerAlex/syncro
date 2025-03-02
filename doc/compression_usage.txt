@@ -1,0 +1,42 @@
+COMPRESSION/DECOMPRESSION USAGE
+===============================
+
+Direct API Functions
+-------------------
+For developers extending the system, two primary functions are available:
+
+1. Compression (in commit.c):
+   static int snapem(char* path)
+   - Compresses the file at 'path' and stores it under .syncro/objects/stage/
+   - Returns 0 on success, -1 on error
+   - Automatically creates necessary directories
+
+2. Decompression (in inflate.c):
+   int zlib_inflate(FILE *source, FILE *dest)
+   - Decompresses from 'source' file pointer to 'dest' file pointer
+   - Returns 0 on success, -1 on error
+   - Also writes output to .syncro/refs/buff.out for vdiff operations
+
+Command-Line Usage
+-----------------
+End users typically don't interact directly with compression/decompression.
+The functionality is transparent during normal operations:
+
+1. Adding files:
+   syncro add <file>
+   - File is tracked but not compressed until commit
+
+2. Committing changes:
+   syncro commit -m "message"
+   - Tracked files are compressed and stored in the repository
+
+3. Viewing differences:
+   syncro vdiff <file>
+   - File is decompressed for comparison using vbindiff
+
+Testing the System
+-----------------
+For testing compression/decompression:
+1. Use the test_compression.sh script in the project root
+2. The script verifies compression/decompression integrity
+3. Valgrind is used to detect memory issues 

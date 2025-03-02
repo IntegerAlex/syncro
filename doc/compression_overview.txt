@@ -1,0 +1,34 @@
+COMPRESSION AND DECOMPRESSION SYSTEM
+====================================
+
+Overview
+--------
+The Syncro version control system uses zlib compression to efficiently store file contents
+while preserving data integrity. Files are compressed when added to the repository and
+decompressed when retrieved.
+
+Key Features:
+- Uses zlib's compress2() and uncompress() for reliable compression
+- Stores original file size header for accurate decompression
+- Single-pass compression for better performance
+- Memory-efficient implementation with proper resource management
+- Comprehensive error checking and reporting
+
+File Format
+-----------
+Compressed files are stored in the following format:
+1. 4-byte header (uint32_t) containing the original file size
+2. Compressed data block
+
+This format ensures reliable decompression even for binary files or files with special characters.
+
+Implementation Files
+-------------------
+- src/commit.c: Contains the compression implementation (snapem function)
+- src/inflate.c: Contains the decompression implementation (zlib_inflate function)
+
+Dependencies
+-----------
+- zlib library for compression
+- stdint.h for fixed-width integer types
+- limits.h for PATH_MAX definition 
